@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Spare Parts List</title>
+    <style>
+        #searchInput {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus {
+            background-color: white;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Modern low stock alert section */
+        .low-stock-alert {
+            background-color: #fff8f6;
+            border-left: 4px solid #ff6b6b;
+            border-radius: 4px;
+        }
+
+        .low-stock-alert .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid #ffece8;
+            padding: 1rem 1.5rem;
+        }
+
+        .low-stock-alert .card-header h5 {
+            color: #d63031;
+            font-weight: 600;
+        }
+
+        .low-stock-alert .table {
+            margin-bottom: 0;
+        }
+
+        .low-stock-alert .table th {
+            background-color: #ffece8;
+            color: #d63031;
+            font-weight: 500;
+        }
+
+        .low-stock-alert .alert-info {
+            background-color: #ffece8;
+            border-color: #ffc9c9;
+            color: #d63031;
+        }
+
+        .stock-warning {
+            color: #d63031;
+            font-weight: 500;
+        }
+
+        .btn-outline-custom {
+            border-color: #ff6b6b;
+            color: #d63031;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+
+    </style>
+</head>
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Spare Parts Inventory</h2>
+        <a th:href="@{/inventory/parts/add}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Add Part
+        </a>
+    </div>
+
+    <!-- Improved Low Stock Alert Section -->
+    <div class="card mb-4 low-stock-alert">
+        <div class="card-header">
+            <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>Low Stock Items</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(lowStockParts)}" class="alert alert-info">
+                <i class="bi bi-check-circle-fill me-2"></i>All items are sufficiently stocked.
+            </div>
+            <table th:unless="${#lists.isEmpty(lowStockParts)}" class="table">
+                <thead>
+                <tr>
+                    <th>Part Name</th>
+                    <th>Current Stock</th>
+                    <th>Minimum Stock</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="part : ${lowStockParts}">
+                    <td th:text="${part.partName}"></td>
+                    <td class="text-danger" th:text="${part.currentStockLevel}"></td>
+                    <td th:text="${part.minimumStockLevel}"></td>
+                    <td>
+                        <a th:href="@{/inventory/parts/{id}(id=${part.partId})}" class="btn btn-sm btn-outline-custom">
+                            <i class="bi bi-arrow-right-circle"></i> Restock
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" class="form-control" id="searchInput"
+                           placeholder="Search by part name, category, brand, or location..."
+                           th:value="${search}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Part Name</th>
+                    <th>Category</th>
+                    <th>Brand</th>
+                    <th>Storage Location</th>
+                    <th>Stock</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="part : ${parts}">
+                    <td th:text="${part.partId}"></td>
+                    <td th:text="${part.partName}"></td>
+                    <td th:text="${part.category.categoryName}"></td>
+                    <td th:text="${part.brand}"></td>
+                    <td th:text="${part.storageLocation}"></td>
+                    <td>
+                        <span th:class="${part.currentStockLevel < part.minimumStockLevel ? 'stock-warning' : ''}"
+                              th:text="${part.currentStockLevel} + ' (' + ${part.minimumStockLevel} + ')'">
+                        </span>
+                    </td>
+                    <td th:text="${'$' + #numbers.formatDecimal(part.unitPrice, 1, 2)}"></td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/inventory/parts/{id}(id=${part.partId})}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a th:href="@{/inventory/parts/edit/{id}(id=${part.partId})}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/inventory/parts/delete/{id}(id=${part.partId})}"
+                                  method="post" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this part?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                // Search in main parts table
+                const mainTableRows = document.querySelectorAll('.table-striped tbody tr');
+                mainTableRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    let shouldShow = false;
+
+                    // Check each cell except the last one (actions)
+                    for (let i = 0; i < cells.length - 1; i++) {
+                        if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                            shouldShow = true;
+                            break;
+                        }
+                    }
+
+                    row.style.display = shouldShow ? '' : 'none';
+                });
+
+                // Search in low stock table if it exists
+                const lowStockTable = document.querySelector('.low-stock-alert table');
+                if (lowStockTable) {
+                    const lowStockRows = lowStockTable.querySelectorAll('tbody tr');
+                    lowStockRows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        let shouldShow = false;
+
+                        // Check all cells in low stock table
+                        for (let i = 0; i < cells.length; i++) {
+                            if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                                shouldShow = true;
+                                break;
+                            }
+                        }
+
+                        row.style.display = shouldShow ? '' : 'none';
+                    });
+
+                    // Show/hide the entire low stock card based on results
+                    const lowStockCard = document.querySelector('.low-stock-alert');
+                    const visibleLowStockRows = Array.from(lowStockRows).filter(row =>
+                        row.style.display !== 'none'
+                    );
+
+                    if (visibleLowStockRows.length === 0 && searchTerm !== '') {
+                        lowStockCard.style.display = 'none';
+                    } else {
+                        lowStockCard.style.display = '';
+                    }
+                }
+            });
+
+            // Trigger search on page load if there's a search term
+            if (searchInput.value) {
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        });
+    </script>
+</section>
+</body>
+</html>

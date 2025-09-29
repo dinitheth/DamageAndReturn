@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+  <title>Edit Category</title>
+</head>
+<body>
+<section>
+  <div class="card">
+    <div class="card-header">
+      <h3>Edit Category</h3>
+    </div>
+    <div class="card-body">
+      <form th:action="@{/inventory/categories/update/{id}(id=${category.categoryId})}" method="post" th:object="${category}">
+        <input type="hidden" th:field="*{categoryId}">
+
+        <div class="mb-3">
+          <label for="categoryName" class="form-label">Category Name</label>
+          <input type="text" class="form-control" id="categoryName" th:field="*{categoryName}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="parentCategory" class="form-label">Parent Category</label>
+          <select class="form-select" id="parentCategory" th:field="*{parentCategory}">
+            <option value="">-- No Parent --</option>
+            <option th:each="cat : ${allCategories}"
+                    th:value="${cat.categoryId}"
+                    th:selected="${category.parentCategory != null && cat.categoryId == category.parentCategory.categoryId}"
+                    th:text="${cat.categoryName}">
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="isActive" th:field="*{active}">
+          <label class="form-check-label" for="isActive">Active</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a th:href="@{/inventory/categories}" class="btn btn-secondary">Cancel</a>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+      </form>
+    </div>
+  </div>
+</section>
+</body>
+</html>

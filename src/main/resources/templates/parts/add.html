@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Add Spare Part</title>
+</head>
+<body>
+<section>
+    <div class="card">
+        <div class="card-header">
+            <h3>Add New Spare Part</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/inventory/parts/add}" method="post" th:object="${part}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="partName" class="form-label">Part Name</label>
+                            <input type="text" class="form-control" id="partName" th:field="*{partName}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" th:field="*{category}" required>
+                                <option value="">-- Select Category --</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.categoryId}"
+                                        th:text="${cat.categoryName}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="brand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="brand" th:field="*{brand}" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="unitPrice" class="form-label">Unit Price</label>
+                            <input type="number" step="0.01" class="form-control" id="unitPrice" th:field="*{unitPrice}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="minimumStockLevel" class="form-label">Minimum Stock Level</label>
+                            <input type="number" class="form-control" id="minimumStockLevel" th:field="*{minimumStockLevel}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="currentStockLevel" class="form-label">Current Stock Level</label>
+                            <input type="number" class="form-control" id="currentStockLevel" th:field="*{currentStockLevel}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="storageLocation" class="form-label">Storage Location</label>
+                    <input type="text" class="form-control" id="storageLocation" th:field="*{storageLocation}" required>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="isActive" th:field="*{active}" checked>
+                    <label class="form-check-label" for="isActive">Active</label>
+                </div>
+
+                <input type="hidden" th:field="*{lastUpdated}">
+                <input type="hidden" th:field="*{updatedBy}">
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a th:href="@{/inventory/parts}" class="btn btn-secondary">Cancel</a>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

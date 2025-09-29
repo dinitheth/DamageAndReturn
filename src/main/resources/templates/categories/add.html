@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Add Category</title>
+
+</head>
+<body>
+<section>
+    <div class="card">
+        <div class="card-header">
+            <h3>Add New Category</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/inventory/categories/add}" method="post" th:object="${category}">
+                <div class="mb-3">
+                    <label for="categoryName" class="form-label">Category Name</label>
+                    <input type="text" class="form-control" id="categoryName" th:field="*{categoryName}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="parentCategory" class="form-label">Parent Category</label>
+                    <select class="form-select" id="parentCategory" th:field="*{parentCategory}">
+                        <option value="">-- No Parent --</option>
+                        <option th:each="cat : ${allCategories}"
+                                th:value="${cat.categoryId}"
+                                th:text="${cat.categoryName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="isActive" th:field="*{active}" checked>
+                    <label class="form-check-label" for="isActive">Active</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a th:href="@{/inventory/categories}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>
